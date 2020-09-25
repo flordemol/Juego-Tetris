@@ -266,11 +266,32 @@ var pieza;
 
 // plantilla del objeto pieza
 var objPieza = function () {
-  this.x = 1;
-  this.y = 1;
+  this.x = 0;
+  this.y = 0;
 
   this.tipo = 1; // tipo de ficha --> 7 posibilidades (0-6)
   this.angulo = 0; // posición --> 4 posibilidades (0-3)
+
+  // velocidad para la caída
+  this.retraso = 50; // 50 ciclos por segundo
+  this.fotograma = 0; // contador
+
+  // Crear nueva pieza al azar y darle coordenadas
+  this.nueva = function () {
+    this.tipo = Math.floor(Math.random() * 7);
+    this.y = 5;
+    this.x = 4;
+  };
+
+  // CAER
+  this.caer = function () {
+    if (this.fotograma < this.retraso) {
+      this.fotograma++;
+    } else {
+      this.y++;
+      this.fotograma = 0;
+    }
+  };
 
   // Dibujamos la pieza en pantalla (matriz 4x4)
   this.dibuja = function () {
@@ -293,8 +314,8 @@ var objPieza = function () {
             ctx.fillStyle = morado;
 
           ctx.fillRect(
-            (this.x + px) * anchoFicha,
-            (this.y + py) * altoFicha,
+            (this.x + px - 1) * anchoFicha, // quitar margen izquierdo
+            (this.y + py - margenSuperior) * altoFicha, // quitar margenes superiores
             anchoFicha,
             altoFicha
           );
@@ -303,21 +324,33 @@ var objPieza = function () {
     }
   };
 
+  // ROTAR pieza
   this.rotar = function () {
+    if (this.angulo < 3) {
+      this.angulo++;
+    } else {
+      this.angulo = 0;
+    }
     console.log("rotar");
   };
 
   this.abajo = function () {
+    this.y++;
     console.log("abajo");
   };
 
   this.derecha = function () {
+    this.x++;
     console.log("derecha");
   };
 
   this.izquierda = function () {
+    this.x--;
     console.log("izq");
   };
+
+  // se crea una nueva pieza antes de dibujar
+  this.nueva();
 };
 
 // DIBUJAR TABLERO
@@ -401,5 +434,6 @@ function borraCanvas() {
 function principal() {
   borraCanvas();
   dibujaTablero();
+  pieza.caer();
   pieza.dibuja();
 }
