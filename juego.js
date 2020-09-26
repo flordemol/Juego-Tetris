@@ -43,6 +43,31 @@ var tablero = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ];
 
+// Copia del tablero vacío para resetear partida
+var tableroCopia = [
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+];
+
 // COLORES
 var rojo = "#FF0000";
 var morado = "#800080";
@@ -262,6 +287,17 @@ var fichaGrafico = [
   ],
 ];
 
+// RESETEA EL TABLERO LUEGO DE PERDER
+function reseteaTablero() {
+  console.log("resetea");
+
+  for (py = 0; py < 21; py++) {
+    for (px = 0; px < 12; px++) {
+      tablero[py][px] = tableroCopia[py][px];
+    }
+  }
+}
+
 var pieza;
 
 // plantilla del objeto pieza
@@ -283,6 +319,40 @@ var objPieza = function () {
     this.x = 4;
   };
 
+  // COMPROBAR SI PIERDE LA PARTIDA
+  this.compruebaSiPierde = function () {
+    var pierde = false;
+
+    for (px = 1; px < anchoTablero + 1; px++) {
+      if (tablero[2][px] > 0) {
+        pierde = true;
+      }
+    }
+    return pierde;
+  };
+
+  this.limpia = function () {
+    var filaCompleta;
+
+    // Revisa todas las filas para encontrar si hay huecos (desde margen superior durante todo el alto)
+    for (py = margenSuperior; py < altoTablero; py++) {
+      filaCompleta = true; // Luego de comprobar cada fila vuelvo a ponerlo en true para que siga comprobando de a una fila y no borre todo junto
+
+      // Recorre todas las columnas de la fila
+      for (px = 1; px < anchoTablero + 1; px++) {
+        if (tablero[py][px] == 0) {
+          filaCompleta = false;
+        }
+      }
+
+      if (filaCompleta == true) {
+        for (px = 1; px < anchoTablero + 1; px++) {
+          tablero[py][px] = 0;
+        }
+      }
+    }
+  };
+
   // CAER
   this.caer = function () {
     if (this.fotograma < this.retraso) {
@@ -292,7 +362,12 @@ var objPieza = function () {
         this.y++;
       } else {
         this.fijar();
+        this.limpia();
         this.nueva();
+
+        if (this.compruebaSiPierde() == true) {
+          reseteaTablero();
+        }
       }
       this.fotograma = 0;
     }
