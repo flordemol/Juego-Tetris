@@ -279,7 +279,7 @@ var objPieza = function () {
   // Crear nueva pieza al azar y darle coordenadas
   this.nueva = function () {
     this.tipo = Math.floor(Math.random() * 7);
-    this.y = 5;
+    this.y = 0;
     this.x = 4;
   };
 
@@ -288,9 +288,44 @@ var objPieza = function () {
     if (this.fotograma < this.retraso) {
       this.fotograma++;
     } else {
-      this.y++;
+      if (this.colision(this.angulo, this.y + 1, this.x) == false) {
+        this.y++;
+      } else {
+        this.fijar();
+        this.nueva();
+      }
       this.fotograma = 0;
     }
+  };
+
+  this.fijar = function () {
+    for (py = 0; py < 4; py++) {
+      for (px = 0; px < 4; px++) {
+        if (fichaGrafico[this.tipo][this.angulo][py][px] > 0) {
+          tablero[this.y + py][this.x + px] =
+            fichaGrafico[this.tipo][this.angulo][py][px];
+        }
+      }
+    }
+  };
+
+  // COMPROBAR COLISIÓN
+  // Antes de cada movimiento debe comprobar que en la matriz de la ficha (4x4) no haya nada que no sea un 0
+  this.colision = function (anguloNuevo, yNueva, xNueva) {
+    var resultado = false; // por defecto no hay colisión
+
+    for (py = 0; py < 4; py++) {
+      for (px = 0; px < 4; px++) {
+        // si hay una ficha
+        if (fichaGrafico[this.tipo][anguloNuevo][py][px] > 0) {
+          // si hay algo sólido en el tablero
+          if (tablero[yNueva + py][xNueva + px] > 0) {
+            resultado = true; // hay colisión
+          }
+        }
+      }
+    }
+    return resultado;
   };
 
   // Dibujamos la pieza en pantalla (matriz 4x4)
@@ -326,27 +361,43 @@ var objPieza = function () {
 
   // ROTAR pieza
   this.rotar = function () {
-    if (this.angulo < 3) {
-      this.angulo++;
+    // Se simula una rotación para comprobar si se puede rotar o colisiona
+    var anguloNuevo = this.angulo;
+
+    if (anguloNuevo < 3) {
+      anguloNuevo++;
     } else {
-      this.angulo = 0;
+      anguloNuevo = 0;
+    }
+
+    if (this.colision(anguloNuevo, this.y, this.x) == false) {
+      this.angulo = anguloNuevo;
     }
     console.log("rotar");
   };
 
   this.abajo = function () {
-    this.y++;
-    console.log("abajo");
+    // Antes de mover, simula el movimiento para comprobar si colisiona
+    if (this.colision(this.angulo, this.y + 1, this.x) == false) {
+      this.y++;
+      console.log("abajo");
+    }
   };
 
   this.derecha = function () {
-    this.x++;
-    console.log("derecha");
+    // Antes de mover, simula el movimiento para comprobar si colisiona
+    if (this.colision(this.angulo, this.y, this.x + 1) == false) {
+      this.x++;
+      console.log("derecha");
+    }
   };
 
   this.izquierda = function () {
-    this.x--;
-    console.log("izq");
+    // Antes de mover, simula el movimiento para comprobar si colisiona
+    if (this.colision(this.angulo, this.y, this.x - 1) == false) {
+      this.x--;
+      console.log("izq");
+    }
   };
 
   // se crea una nueva pieza antes de dibujar
@@ -357,8 +408,8 @@ var objPieza = function () {
 function dibujaTablero() {
   // No empieza en 0 sino en 4, para ocultar nuevas fichas
   for (py = margenSuperior; py < altoTablero; py++) {
-    // Empieza en 1 para ocultar margen izquierdo
-    for (px = 1; px < anchoTablero; px++) {
+    // Empieza en 1 para ocultar margen izquierdo y +1 para margen derecho
+    for (px = 1; px < anchoTablero + 1; px++) {
       if (tablero[py][px] != 0) {
         if (tablero[py][px] == 1) ctx.fillStyle = rojo;
 
